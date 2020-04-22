@@ -1,0 +1,102 @@
+---
+m3_dbnode_version: '0.15.0-rc.3'
+
+m3_dbnode_tarball: 'm3_{{ m3_dbnode_version }}_linux_amd64.tar.gz'
+m3_dbnode_tarball_md5: '107ce036b8f4965790ebe4c81480808c'
+m3_dbnode_tarball_url: 'https://github.com/m3db/m3/releases/download/v{{ m3_dbnode_version }}/{{ m3_dbnode_tarball }}'
+
+m3_dbnode_bin_path: '/usr/local/bin/m3dbnode'
+
+m3_dbnode_service_name: 'm3dbnode'
+m3_dbnode_service_user: 'nobody'
+
+m3_dbnode_conf_path: '/etc/{{ m3_dbnode_service_name }}.conf'
+m3_dbnode_data_path: '/var/lib/{{ m3_dbnode_service_name }}'
+m3_dbnode_cache_path: '{{ m3_dbnode_data_path }}/cache'
+
+m3_dbnode_log_level: 'info'
+
+# Listening ports
+m3_dbnode_metrics_port: 7203
+# Address to listen on for local thrift/tchannel APIs.
+m3_dbnode_listen_port: 9000
+# Address to listen on for cluster thrift/tchannel APIs.
+m3_dbnode_http_listen_port: 9001
+# Address to listen on for local json/http APIs (debugging)
+m3_dbnode_cluster_listen_port: 9002
+# Address to listen on for cluster json/http APIs (debugging)
+m3_dbnode_cluster_http_listen_port: 9003
+# Address to listen on for cluster json/http APIs (debugging)
+m3_dbnode_debug_port: 9004
+# Hardcoded embedded ETCD server ports
+m3_dbnode_etcd_client_port: 2379
+m3_dbnode_etcd_server_port: 2380
+
+# For querying for ETCD cluster nodes
+consul_catalog_url: 'http://localhost:8500/v1/catalog'
+m3_dbnode_etcd_service_name: 'etcd'
+
+#######################
+# ETCD cluster config #
+#######################
+m3_dbnod_config:
+  db:
+    logging:
+      level: '{{ m3_dbnode_log_level }}'
+
+    metrics:
+      prometheus:
+        handlerPath: /metrics
+      # TODO apparently not supported by db.metrics settings
+      #listenAddress: '0.0.0.0:{{ m3_dbnode_metrics_port }}'
+      sanitization: prometheus
+      extended: detailed
+      # 1.0 means no metrics sampling
+      samplingRate: 1.0
+
+    listenAddress: '0.0.0.0:{{ m3_dbnode_listen_port }}'
+    clusterListenAddress: '0.0.0.0:{{ m3_dbnode_http_listen_port }}'
+    httpNodeListenAddress: '0.0.0.0:{{ m3_dbnode_cluster_listen_port }}'
+    httpClusterListenAddress: '0.0.0.0:{{ m3_dbnode_cluster_http_listen_port }}'
+    debugListenAddress: '0.0.0.0:{{ m3_dbnode_debug_port }}'
+
+    # Configuration for resolving the instances host ID.
+    hostID:
+      resolver: config
+      value: '{{ hostname }}'
+
+    fs:
+      # Directory to store M3DB data in.
+      filePathPrefix: '{{ m3_dbnode_data_path }}'
+
+    bootstrap:
+      # Order in which to run the bootstrappers. Don't change these values unless
+      # you know what you're doing as non-standard configurations can cause data
+      # loss or make recovery from disaster scenarios difficult.
+      bootstrappers:
+          - filesystem
+          - commitlog
+          - peers
+          - uninitialized_topology
+
+    commitlog:
+      # Maximum number of bytes that will be buffered before flushing the commitlog.
+      flushMaxBytes: 524288
+      # Maximum amount of time data can remain buffered before flushing the commitlog.
+      flushEvery: 5s
+      # Configuration for the commitlog queue. High throughput setups may require higher
+      # values. Higher values will use more memory.
+      queue:
+        calculationType: fixed
+        size: 2097152
+
+    # etcd configuration.
+    config:
+      service:
+        env: default_env
+        zone: embedded
+        service: m3db
+        cacheDir: '{{ m3_dbnode_cache_path }}'
+        etcdClusters:
+          - zone: embedded
+            endpoints: '{{ m3_dbnode_etcd_endpoints }}'

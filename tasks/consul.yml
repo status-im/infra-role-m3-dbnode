@@ -1,0 +1,14 @@
+---
+- name: Create Consul service definition
+  include_role: name=consul-service
+  vars:
+    consul_config_name: '{{ m3_dbnode_service_name }}'
+    consul_services:
+      - name: '{{ m3_dbnode_service_name }}'
+        tags: ['monitor', 'metrics-store']
+        port: '{{ m3_dbnode_cluster_listen_port }}'
+        checks:
+          - id: '{{ m3_dbnode_service_name }}-health'
+            name: M3 DB health
+            type: http
+            http: 'http://localhost:{{ m3_dbnode_cluster_listen_port }}/health'

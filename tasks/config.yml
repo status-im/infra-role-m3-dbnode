@@ -1,0 +1,6 @@
+---
+- name: M3 DB Node | Generate the config file
+  copy:
+    dest: '{{ m3_dbnode_conf_path }}'
+    content: '{{ m3_dbnod_config | to_nice_yaml }}'
+    mode: 0644

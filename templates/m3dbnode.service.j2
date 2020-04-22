@@ -1,0 +1,15 @@
+[Unit]
+Description="M3 DB Node for storing Metrics"
+Documentation=https://m3db.github.io/m3/
+Requires=network-online.target
+After=network-online.target
+ConditionFileNotEmpty={{ m3_dbnode_conf_path }}
+
+[Service]
+User={{ m3_dbnode_service_user }}
+ExecStart={{ m3_dbnode_bin_path }} -f {{ m3_dbnode_conf_path }}
+Restart=on-failure
+LimitNOFILE=3000000
+
+[Install]
+WantedBy=multi-user.target

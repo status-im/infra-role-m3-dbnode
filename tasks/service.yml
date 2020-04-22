@@ -1,0 +1,25 @@
+---
+- name: M3 DB Node | Create directories for service
+  file:
+    path: '{{ item }}'
+    state: directory
+    owner: '{{ m3_dbnode_service_user }}'
+    mode: 0775
+  with_items:
+    - '{{ m3_dbnode_data_path }}'
+    - '{{ m3_dbnode_cache_path }}'
+
+- name: M3 DB Node | Create systemd Unit file
+  template:
+    src: m3dbnode.service.j2
+    dest: '/lib/systemd/system/{{ m3_dbnode_service_name }}.service'
+    mode: 0644
+
+- name: M3 DB Node | reload systemctl
+  command: systemctl daemon-reload
+
+- name: M3 DB Node | Start systemd service
+  service:
+    name: '{{ m3_dbnode_service_name }}.service'
+    state: restarted
+    enabled: true

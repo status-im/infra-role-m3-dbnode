@@ -1,0 +1,9 @@
+---
+- name: M3 DB Node | Get ETCD cluster nodes
+  uri:
+    url: '{{ consul_catalog_url }}/service/{{ m3_dbnode_etcd_service_name }}'
+  register: m3_dbnode_etcd_services
+
+- name: M3 DB Node | Assemble ETCD endrpoints
+  set_fact:
+    m3_dbnode_etcd_endpoints: '{{ m3_dbnode_etcd_services.json | json_query( "[].[to_string(ServiceAddress), to_string(ServicePort)]") | map("join", ":") | list }}'

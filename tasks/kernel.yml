@@ -1,0 +1,14 @@
+---
+# For details see:
+# https://m3db.github.io/m3/operational_guide/kernel_configuration/
+
+- name: M3 DB Node | Adjust kernel limits
+  sysctl:
+    name: '{{ item.name }}'
+    value: '{{ item.value }}'
+  with_items:
+    - { name: 'vm.max_map_count', value: 3000000 }
+    - { name: 'fs.file-max',      value: 3000000 }
+    - { name: 'fs.nr_open',       value: 3000000 }
+    - { name: 'vm.swappiness',    value: 1 }
+

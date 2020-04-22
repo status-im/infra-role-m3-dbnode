@@ -1,0 +1,19 @@
+---
+- name: M3 DB Node | Download tarball
+  get_url:
+    url: '{{ m3_dbnode_tarball_url }}'
+    dest: '/tmp/{{ m3_dbnode_tarball }}'
+    checksum: 'md5:{{ m3_dbnode_tarball_md5 }}'
+
+- name: M3 DB Node | Unpack tarball
+  unarchive:
+    src: '/tmp/{{ m3_dbnode_tarball }}'
+    dest: '/tmp'
+    remote_src: true
+
+- name: M3 DB Node | Install binary
+  copy:
+    src: '/tmp/m3_{{ m3_dbnode_version }}_linux_amd64/m3dbnode'
+    dest: '{{ m3_dbnode_bin_path }}'
+    mode: 0755
+    remote_src: true
